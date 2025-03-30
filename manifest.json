@@ -26,7 +26,7 @@
       }
     },
     "web_accessible_resources": [{
-      "resources": ["review.html", "edit.html", "quiz.html"],
+      "resources": ["review.html", "edit.html", "quiz.html", "stats.html"],
       "matches": ["<all_urls>"]
     }]
   }

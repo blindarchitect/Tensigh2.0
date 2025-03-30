@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateProgress() {
     const progress = ((currentIndex) / memories.length) * 100;
     progressBar.style.width = `${progress}%`;
-    progressText.textContent = `${currentIndex + 1}/${memories.length}`;
+    progressText.textContent = `${Math.min(currentIndex + 1, memories.length)}/${memories.length}`;
   }
 
   // Show answer button
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Update memory based on rating
     memory.reviewCount = (memory.reviewCount || 0) + 1;
+    memory.lastRating = rating; // Store the last rating
     
     if (rating === 1) { // Again
       memory.interval = 1;
@@ -122,7 +123,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         stats: {
           ...stats,
           reviewed: (stats.reviewed || 0) + 1,
-          streak: (stats.streak || 0) + 1
+          streak: (stats.streak || 0) + 1,
+          lastReviewDate: new Date().toISOString()
         }
       });
     } catch (error) {
@@ -136,10 +138,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentIndex < memories.length) {
       showMemory();
     } else {
+      // Create completion screen
       questionEl.textContent = "Review complete!";
       answerEl.style.display = 'none';
       contextEl.style.display = 'none';
       ratingButtons.style.display = 'none';
+      
+      // Create completion buttons container
+      const completionButtons = document.createElement('div');
+      completionButtons.className = 'completion-buttons';
+      completionButtons.innerHTML = `
+        <button id="viewStatsBtn" class="primary-btn">View Stats</button>
+        <button id="closeBtn" class="secondary-btn">Close Window</button>
+      `;
+      
+      // Add buttons to the controls container
+      document.querySelector('.controls').appendChild(completionButtons);
+      
+      // Add event listeners for the buttons
+      document.getElementById('viewStatsBtn').addEventListener('click', () => {
+        chrome.tabs.create({
+          url: chrome.runtime.getURL('stats.html'),
+          active: true
+        });
+      });
+      
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        window.close();
+      });
     }
   }
 

@@ -101,3 +101,54 @@ body {
 .hard { background: #f97316; color: white; }
 .good { background: #22c55e; color: white; }
 .easy { background: #3b82f6; color: white; }
+
+.completion-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.secondary-btn {
+  padding: 12px;
+  background: #e2e8f0;
+  color: #1e293b;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.secondary-btn:hover {
+  background: #cbd5e1;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+
+  .card-face {
+    background: #1e293b;
+  }
+
+  .card-context {
+    color: #94a3b8;
+  }
+
+  .card-context a {
+    color: #60a5fa;
+  }
+
+  .secondary-btn {
+    background: #334155;
+    color: #e2e8f0;
+  }
+
+  .secondary-btn:hover {
+    background: #475569;
+  }
+}

@@ -1,3 +1,6 @@
+// Import storage service
+importScripts('storage.js');
+
 // Initialize with professional features
 chrome.runtime.onInstalled.addListener(async () => {
   // Clear existing context menus
@@ -11,21 +14,8 @@ chrome.runtime.onInstalled.addListener(async () => {
     documentUrlPatterns: ["http://*/*", "https://*/*"]
   });
 
-  // Initialize storage with professional defaults
-  await chrome.storage.local.set({
-    memories: [],
-    tags: [],
-    stats: {
-      created: 0,
-      reviewed: 0,
-      streak: 0
-    },
-    settings: {
-      defaultMode: "spacedRepetition",
-      darkMode: false,
-      reviewLimit: 20
-    }
-  });
+  // Initialize storage
+  await MemoryStorage.initialize();
 });
 
 // Enhanced memory creation handler
@@ -62,29 +52,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         console.log("Couldn't get detailed context:", error);
       }
 
-      // Create and save memory
-      const { memories, tags, stats } = await chrome.storage.local.get(['memories', 'tags', 'stats']);
-      
-      const newMemory = {
-        id: Date.now().toString(),
+      // Create memory using storage service
+      const newMemory = await MemoryStorage.createMemory({
         front: info.selectionText.trim(),
         back: context.surroundingText || info.selectionText.trim(),
         context: context,
-        tags: [],
-        createdAt: new Date().toISOString(),
-        nextReview: new Date().toISOString(),
-        easeFactor: 2.5,
-        interval: 1,
-        reviewCount: 0
-      };
-
-      await chrome.storage.local.set({
-        memories: [...memories, newMemory],
-        tags: Array.from(new Set([...tags])),
-        stats: {
-          ...stats,
-          created: stats.created + 1
-        }
+        tags: []
       });
 
       // Visual feedback

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tensigh Pro - Statistics</title>
+  <link rel="stylesheet" href="stats.css">
+</head>
+<body>
+  <div class="stats-container">
+    <h1>Your Learning Statistics</h1>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-value" id="totalMemories">0</div>
+        <div class="stat-label">Total Memories</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="reviewedMemories">0</div>
+        <div class="stat-label">Reviewed</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="streak">0</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" id="lastReview">-</div>
+        <div class="stat-label">Last Review</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h2>Review Distribution</h2>
+      <div class="rating-distribution">
+        <div class="rating-bar">
+          <div class="rating-label">Again</div>
+          <div class="rating-bar-container">
+            <div class="rating-bar-fill" id="againBar" style="width: 0%"></div>
+          </div>
+          <div class="rating-count" id="againCount">0</div>
+        </div>
+        <div class="rating-bar">
+          <div class="rating-label">Hard</div>
+          <div class="rating-bar-container">
+            <div class="rating-bar-fill" id="hardBar" style="width: 0%"></div>
+          </div>
+          <div class="rating-count" id="hardCount">0</div>
+        </div>
+        <div class="rating-bar">
+          <div class="rating-label">Good</div>
+          <div class="rating-bar-container">
+            <div class="rating-bar-fill" id="goodBar" style="width: 0%"></div>
+          </div>
+          <div class="rating-count" id="goodCount">0</div>
+        </div>
+        <div class="rating-bar">
+          <div class="rating-label">Easy</div>
+          <div class="rating-bar-container">
+            <div class="rating-bar-fill" id="easyBar" style="width: 0%"></div>
+          </div>
+          <div class="rating-count" id="easyCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h2>Due Reviews</h2>
+      <div class="due-reviews" id="dueReviews">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+  <script src="stats.js"></script>
+</body>
+</html> 

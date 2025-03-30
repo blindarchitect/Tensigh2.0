@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Memory - Tensigh</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #202124;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #202124;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      min-height: 100px;
+      resize: vertical;
+    }
+    .buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .cancel {
+      background: white;
+      border: 1px solid #dadce0;
+    }
+    .save {
+      background: #1a73e8;
+      color: white;
+      border: none;
+    }
+    .delete {
+      background: #d93025;
+      color: white;
+      border: none;
+      margin-right: auto;
+    }
+    .delete:hover {
+      background: #c5221f;
+    }
+    .context-info {
+      font-size: 13px;
+      color: #5f6368;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #f1f3f4;
+    }
+    .original-url {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    /* Tag styles */
+    .tags-container {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .tag {
+      background: #e0e0e0;
+      color: #202124;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+    }
+    .tag-remove {
+      margin-left: 4px;
+      cursor: pointer;
+    }
+    .tag-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    #newTagInput {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit Memory</h1>
+  
+  <div class="form-group">
+    <label for="front">Memory Text</label>
+    <textarea id="front"></textarea>
+  </div>
+  
+  <div class="form-group">
+    <label for="back">Context</label>
+    <textarea id="back"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Tags</label>
+    <div class="tags-container" id="tagsContainer"></div>
+    <div class="tag-actions">
+      <input type="text" id="newTagInput" placeholder="Add new tag">
+      <button id="addTagBtn">Add</button>
+    </div>
+  </div>
+  
+  <div class="buttons">
+    <button class="delete" id="deleteBtn">Delete Memory</button>
+    <button class="cancel" id="cancelBtn">Cancel</button>
+    <button class="save" id="saveBtn">Save Changes</button>
+  </div>
+  
+  <div class="context-info">
+    <div>Originally from: <a href="#" id="originalUrl" class="original-url"></a></div>
+    <div>Saved on: <span id="savedDate"></span></div>
+  </div>
+
+  <script src="edit.js"></script>
+</body>
+</html>

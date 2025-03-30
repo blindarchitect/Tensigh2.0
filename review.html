@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tensigh Pro - Review</title>
+  <link rel="stylesheet" href="review.css">
+</head>
+<body>
+  <div class="review-container">
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+      </div>
+      <div class="progress-text" id="progressText">1/10</div>
+    </div>
+    
+    <div class="card">
+      <div class="card-face front">
+        <div class="card-content" id="question"></div>
+      </div>
+      <div class="card-face back">
+        <div class="card-content" id="answer"></div>
+        <div class="card-context" id="context"></div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button id="showAnswerBtn" class="primary-btn">Show Answer</button>
+      <div class="rating-buttons" id="ratingButtons">
+        <button class="rating-btn again" data-rating="1">Again</button>
+        <button class="rating-btn hard" data-rating="2">Hard</button>
+        <button class="rating-btn good" data-rating="3">Good</button>
+        <button class="rating-btn easy" data-rating="4">Easy</button>
+      </div>
+    </div>
+  </div>
+  <script src="review.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tensigh Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="pro-header">
+      <h1>Tensigh Pro</h1>
+      <div class="stats-display">
+        <div class="stat">
+          <span>Memories:</span>
+          <span class="stat-count" id="totalCount">0</span>
+        </div>
+        <div class="stat">
+          <span>Due:</span>
+          <span class="stat-count" id="dueCount">0</span>
+        </div>
+        <div class="stat">
+          <span>Streak:</span>
+          <span class="stat-count" id="streakCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="study-mode-selector">
+      <button class="mode-btn active" data-mode="spaced">Spaced</button>
+      <button class="mode-btn" data-mode="quiz">Quiz</button>
+      <button class="mode-btn" data-mode="review">Quick Review</button>
+    </div>
+
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search memories...">
+      <select id="tagFilter">
+        <option value="">All Tags</option>
+      </select>
+    </div>
+    
+    <div class="memory-list" id="memoryList"></div>
+
+    <div class="pro-actions">
+      <button id="reviewBtn" class="primary-btn">Start Session</button>
+      <button id="statsBtn" class="secondary-btn">View Stats</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

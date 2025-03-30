@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Tensigh Pro",
+    "version": "2.0",
+    "description": "Advanced flashcard system with multiple study modes",
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "permissions": [
+      "contextMenus",
+      "storage",
+      "activeTab",
+      "scripting"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+      }
+    },
+    "web_accessible_resources": [{
+      "resources": ["review.html", "edit.html", "quiz.html"],
+      "matches": ["<all_urls>"]
+    }]
+  }

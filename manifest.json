@@ -12,7 +12,15 @@
       "contextMenus",
       "storage",
       "activeTab",
-      "scripting"
+      "scripting",
+      "tabs",
+      "tabGroups",
+      "notifications",
+      "windows",
+      "commands"
+    ],
+    "host_permissions": [
+      "<all_urls>"
     ],
     "background": {
       "service_worker": "background.js"
@@ -28,5 +36,14 @@
     "web_accessible_resources": [{
       "resources": ["review.html", "edit.html", "quiz.html", "stats.html"],
       "matches": ["<all_urls>"]
-    }]
+    }],
+    "commands": {
+      "toggle_selection_mode": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+S",
+          "mac": "Command+Shift+S"
+        },
+        "description": "Toggle tab selection mode"
+      }
+    }
   }

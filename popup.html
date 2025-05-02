@@ -4,11 +4,84 @@
   <meta charset="UTF-8">
   <title>Tensigh Pro</title>
   <link rel="stylesheet" href="popup.css">
+  <style>
+    body {
+      width: 300px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    
+    .selected-tab {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .favicon {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+    
+    .tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    #noTabsMessage {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+    }
+    
+    .success-message {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <header class="pro-header">
       <h1>Tensigh Pro</h1>
+      <div class="header-buttons">
+        <button id="importBtn" class="icon-btn" title="Import Memories">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+        <button id="exportBtn" class="icon-btn" title="Export Memories">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </button>
+        <button id="statsBtn" class="icon-btn" title="View Statistics">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </button>
+      </div>
       <div class="stats-display">
         <div class="stat">
           <span>Memories:</span>
@@ -25,26 +98,47 @@
       </div>
     </header>
 
-    <div class="study-mode-selector">
-      <button class="mode-btn active" data-mode="spaced">Spaced</button>
-      <button class="mode-btn" data-mode="quiz">Quiz</button>
-      <button class="mode-btn" data-mode="review">Quick Review</button>
-    </div>
+    <div class="content-tabs">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="study">Study</button>
+        <button class="tab-btn" data-tab="saved-tabs">Saved Tabs</button>
+      </div>
+      
+      <div class="tab-content" id="study-tab">
+        <div class="study-mode-selector">
+          <button class="mode-btn active" data-mode="spaced">Spaced</button>
+          <button class="mode-btn" data-mode="quiz">Quiz</button>
+          <button class="mode-btn" data-mode="review">Quick Review</button>
+        </div>
 
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search memories...">
-      <select id="tagFilter">
-        <option value="">All Tags</option>
-      </select>
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Search memories...">
+          <select id="tagFilter">
+            <option value="">All Tags</option>
+          </select>
+        </div>
+        
+        <div class="pro-actions">
+          <button id="reviewBtn" class="primary-btn">Start Session</button>
+        </div>
+      </div>
+      
+      <div class="tab-content hidden" id="saved-tabs-tab">
+        <div class="search-container">
+          <input type="text" id="tabSearchInput" placeholder="Search saved tabs...">
+        </div>
+      </div>
     </div>
     
     <div class="memory-list" id="memoryList"></div>
 
-    <div class="pro-actions">
-      <button id="reviewBtn" class="primary-btn">Start Session</button>
+    <div class="pro-actions" id="bottom-actions">
       <button id="statsBtn" class="secondary-btn">View Stats</button>
     </div>
   </div>
+  <div id="noTabsMessage">No tabs selected. Hold Ctrl/Shift and click tabs to select them.</div>
+  <div id="selectedTabs" style="display: none;"></div>
+  <script src="storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

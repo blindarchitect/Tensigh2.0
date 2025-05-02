@@ -40,6 +40,45 @@ body {
   color: #1e40af;
 }
 
+/* Tab Navigation */
+.content-tabs {
+  margin-bottom: 16px;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: #1e40af;
+  border-bottom-color: #1e40af;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tab-content.hidden {
+  display: none;
+}
+
 .study-mode-selector {
   display: flex;
   gap: 8px;
@@ -69,7 +108,7 @@ body {
   margin-bottom: 16px;
 }
 
-#searchInput {
+#searchInput, #tabSearchInput {
   flex: 1;
   padding: 8px 12px;
   border: 1px solid #e2e8f0;
@@ -100,6 +139,10 @@ body {
   margin-bottom: 8px;
 }
 
+.memory-item.saved-tab {
+  border-left: 3px solid #10b981;
+}
+
 .memory-text {
   font-size: 14px;
   line-height: 1.5;
@@ -121,7 +164,7 @@ body {
   gap: 4px;
 }
 
-.tag-btn, .delete-btn, .edit-btn {
+.tag-btn, .delete-btn, .edit-btn, .restore-btn {
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -148,6 +191,11 @@ body {
 .edit-btn:hover {
   background: #e0e7ff;
   color: #4f46e5;
+}
+
+.restore-btn:hover {
+  background: #d1fae5;
+  color: #047857;
 }
 
 .pro-actions {
@@ -192,4 +240,176 @@ body {
   font-size: 11px;
   display: flex;
   align-items: center;
+}
+
+.savedtab-tag {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.no-items-message {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+  font-size: 14px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px dashed #e2e8f0;
+}
+
+/* Tab Group Styles */
+.memory-item.tab-group {
+  border-left: 3px solid #6366f1;
+}
+
+.tab-group-preview {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tab-preview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tab-preview.more-tabs {
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.tab-favicon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.memory-item.tab-group .memory-text {
+  cursor: pointer;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.memory-item.tab-group .memory-text:hover {
+  text-decoration: underline;
+}
+
+.restore-all-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.restore-all-btn:hover {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.tab-list {
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+}
+
+.tab-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tab-item:last-child {
+  border-bottom: none;
+}
+
+.tab-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.tab-item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.restore-single-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.restore-single-btn:hover {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+/* URL display styles */
+.saved-tab-url {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #4b5563;
+  word-break: break-all;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-url {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+  word-break: break-all;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.memory-meta span[title] {
+  cursor: pointer;
+  text-decoration: underline dotted;
 }

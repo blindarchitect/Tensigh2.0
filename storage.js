@@ -129,11 +129,31 @@ class MemoryStorage {
   static async importData(jsonString) {
     try {
       const data = JSON.parse(jsonString);
-      await chrome.storage.local.set(data);
+      
+      // Validate the imported data structure
+      if (!data.memories || !Array.isArray(data.memories)) {
+        throw new Error('Invalid data format: memories array is missing');
+      }
+
+      // Merge imported data with existing data
+      const existingData = await chrome.storage.local.get(null);
+      const mergedData = {
+        ...existingData,
+        memories: [...existingData.memories, ...data.memories],
+        tags: Array.from(new Set([...(existingData.tags || []), ...(data.tags || [])])),
+        stats: {
+          ...existingData.stats,
+          created: (existingData.stats?.created || 0) + (data.stats?.created || 0),
+          reviewed: (existingData.stats?.reviewed || 0) + (data.stats?.reviewed || 0),
+          streak: Math.max(existingData.stats?.streak || 0, data.stats?.streak || 0)
+        }
+      };
+
+      await chrome.storage.local.set(mergedData);
       return true;
     } catch (error) {
       console.error('Error importing data:', error);
-      return false;
+      throw error;
     }
   }
 }

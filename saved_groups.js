@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const savedGroupListContainer = document.getElementById('savedGroupList');
+    const exportDataBtn = document.getElementById('exportDataBtn');
+    const importDataBtn = document.getElementById('importDataBtn');
+    const importFileInput = document.getElementById('importFileInput');
     let allSavedGroups = []; // Cache fetched groups
 
     // Initial load
     renderSavedGroupList();
+    setupImportExportListeners();
 
     async function renderSavedGroupList() {
         try {
@@ -76,7 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  setTimeout(async () => { // Timeout gives tabs time to load a bit
                     try {
                         const newTabIds = newWindow.tabs.map(t => t.id);
-                        const createdGroupId = await chrome.tabs.group({ tabIds: newTabIds, windowId: newWindow.id });
+                        const createdGroupId = await chrome.tabs.group({
+                            tabIds: newTabIds,
+                            createProperties: { windowId: newWindow.id }
+                        });
                         await chrome.tabGroups.update(createdGroupId, {
                             title: groupToLoad.title,
                             color: groupToLoad.color
@@ -113,5 +120,94 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("An error occurred while deleting the group.");
             }
         }
+    }
+
+    // Added: Setup listeners for Import/Export buttons
+    function setupImportExportListeners() {
+        exportDataBtn.addEventListener('click', handleExportData);
+        importDataBtn.addEventListener('click', () => {
+            // Trigger the hidden file input
+            importFileInput.click();
+        });
+        importFileInput.addEventListener('change', handleImportFileSelect);
+    }
+
+    // Added: Handle Export Button Click
+    async function handleExportData() {
+        try {
+            console.log("Exporting data...");
+            const dataToExport = await MemoryStorage.exportAllData();
+            const jsonString = JSON.stringify(dataToExport, null, 2); // Pretty print JSON
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            a.download = `tensigh-pro-backup-${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            console.log("Export initiated.");
+
+        } catch (error) {
+            console.error("Error exporting data:", error);
+            alert("An error occurred while exporting data. Check the console for details.");
+        }
+    }
+
+    // Added: Handle File Selection for Import
+    function handleImportFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            console.log("No file selected.");
+            return; 
+        }
+
+        console.log(`Selected file: ${file.name}, Type: ${file.type}`);
+
+        if (file.type !== 'application/json') {
+            alert("Please select a valid JSON file (.json).");
+            // Reset file input value in case user tries to select the same invalid file again
+            importFileInput.value = null; 
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+            try {
+                const fileContent = e.target.result;
+                const jsonData = JSON.parse(fileContent);
+                console.log("File parsed successfully.");
+
+                // Confirmation step
+                if (confirm("WARNING: Importing this file will overwrite ALL existing memories, saved groups, stats, and settings.\n\nAre you sure you want to proceed?")) {
+                    console.log("User confirmed import.");
+                    await MemoryStorage.importAllData(jsonData);
+                    alert("Data imported successfully!");
+                    // Refresh the list view
+                    await renderSavedGroupList(); 
+                } else {
+                    console.log("User cancelled import.");
+                }
+
+            } catch (error) {
+                console.error("Error processing import file:", error);
+                alert(`Error importing file: ${error.message}\nPlease ensure the file is a valid JSON export from Tensigh Pro.`);
+            }
+            // Reset file input value after processing (or cancellation)
+            importFileInput.value = null; 
+        };
+
+        reader.onerror = (e) => {
+            console.error("Error reading file:", e);
+            alert("An error occurred while reading the file.");
+            // Reset file input value on error
+            importFileInput.value = null; 
+        };
+
+        reader.readAsText(file);
     }
 }); 

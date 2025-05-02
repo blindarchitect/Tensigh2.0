@@ -25,8 +25,13 @@ class MemoryStorage {
         darkMode: false,
         reviewLimit: 20,
         backupEnabled: true,
-        autoBackupInterval: 24 // hours
+        autoBackupInterval: 24, // hours
+        autoBackupOnMemoryCreate: true // Changed: Default to true
       };
+    } else if (data.settings.autoBackupOnMemoryCreate === undefined) {
+        // Add the setting if upgrading from a version without it
+        data.settings.autoBackupOnMemoryCreate = true; // Changed: Default to true
+        initialState.settings = data.settings; // Mark settings to be updated
     }
     if (!data.savedTabs) {
       initialState.savedTabs = [];
@@ -37,11 +42,12 @@ class MemoryStorage {
     
     if (Object.keys(initialState).length > 0) {
         await chrome.storage.local.set(initialState);
+        console.log("Initialized/Updated storage with:", initialState);
     }
   }
 
   static async createMemory(memory) {
-    const { memories, tags, stats } = await chrome.storage.local.get(['memories', 'tags', 'stats']);
+    const { memories, tags, stats, settings } = await chrome.storage.local.get(['memories', 'tags', 'stats', 'settings']);
     
     const newMemory = {
       ...memory,
@@ -55,14 +61,56 @@ class MemoryStorage {
       status: 'active'
     };
 
-    await chrome.storage.local.set({
-      memories: [...memories, newMemory],
-      tags: Array.from(new Set([...tags, ...(memory.tags || [])])),
-      stats: {
+    const updatedMemories = [...memories, newMemory];
+    const updatedTags = Array.from(new Set([...tags, ...(memory.tags || [])]));
+    const updatedStats = {
         ...stats,
-        created: stats.created + 1
-      }
+        created: (stats.created || 0) + 1
+    };
+    
+    await chrome.storage.local.set({
+      memories: updatedMemories,
+      tags: updatedTags,
+      stats: updatedStats
+      // Settings are not modified here
     });
+    
+    console.log("Memory created:", newMemory.id);
+
+    // --- Trigger automatic backup if enabled --- 
+    if (settings && settings.autoBackupOnMemoryCreate) {
+        console.log("Auto-backup setting enabled, triggering backup...");
+        try {
+            const dataToExport = await MemoryStorage.exportAllData();
+            dataToExport.settings = settings; 
+            
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            
+            // --- Use data URL instead of Blob/Object URL ---
+            const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(jsonString)}`;
+            // --- End data URL change ---
+            
+            // Use a fixed filename for overwriting
+            const filename = `tensigh-pro-auto-backup.json`; 
+
+            chrome.downloads.download({
+                url: dataUrl, 
+                filename: filename, // Fixed filename
+                saveAs: false, 
+                conflictAction: 'overwrite' // Added to overwrite existing file
+            }, (downloadId) => {
+                if (chrome.runtime.lastError) {
+                    console.error(`Auto-backup download/overwrite failed: ${chrome.runtime.lastError.message}`);
+                } else {
+                    console.log(`Auto-backup download/overwrite started with ID: ${downloadId}`);
+                }
+            });
+
+        } catch (backupError) {
+            console.error("Error during automatic backup:", backupError);
+        }
+    }
+    // --- End automatic backup trigger --- 
 
     return newMemory;
   }
@@ -200,6 +248,41 @@ class MemoryStorage {
       savedTabGroups: updatedGroups
     });
     console.log(`Deleted saved group: ${groupIdToDelete}`);
+  }
+
+  // Added: Export all relevant data
+  static async exportAllData() {
+      const keysToExport = ['memories', 'tags', 'stats', 'settings', 'savedTabs', 'savedTabGroups'];
+      const data = await chrome.storage.local.get(keysToExport);
+      // Ensure all keys exist, even if empty, for a consistent export
+      keysToExport.forEach(key => {
+          if (data[key] === undefined) {
+              // Initialize based on expected type (arrays or objects)
+              if (key.endsWith('s') || key === 'tags') { // Heuristic for arrays
+                 data[key] = []; 
+              } else if (key === 'stats' || key === 'settings') { // Known objects
+                 data[key] = {}; 
+              }
+          }
+      });
+      return data;
+  }
+
+  // Added: Import data, overwriting existing data
+  static async importAllData(jsonData) {
+    // Basic validation: Check if it's an object
+    if (typeof jsonData !== 'object' || jsonData === null) {
+        throw new Error("Invalid data format: Not an object.");
+    }
+    // Could add more specific checks here if needed (e.g., check for 'memories' array)
+    
+    // Clear existing keys first? Or just overwrite?
+    // Overwriting is simpler and generally fine.
+    await chrome.storage.local.set(jsonData);
+    console.log("Data imported successfully.");
+    // Re-initialize to ensure any default structures are respected if keys were missing,
+    // although exportAllData tries to prevent missing keys.
+    await MemoryStorage.initialize(); 
   }
 }
 

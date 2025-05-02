@@ -7,15 +7,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ratingButtons = document.getElementById('ratingButtons');
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
+  const editCurrentCardBtn = document.getElementById('editCurrentCardBtn');
+  const deleteCurrentCardBtn = document.getElementById('deleteCurrentCardBtn');
 
   // Check if all required elements exist
-  if (!questionEl || !answerEl || !contextEl || !showAnswerBtn || !ratingButtons || !progressBar || !progressText) {
+  if (!questionEl || !answerEl || !contextEl || !showAnswerBtn || !ratingButtons || !progressBar || !progressText || !editCurrentCardBtn || !deleteCurrentCardBtn) {
     console.error('Required elements not found in DOM');
     return;
   }
 
   let memories = [];
   let currentIndex = 0;
+  let currentMemoryId = null;
   
   // Load due memories
   try {
@@ -30,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Shuffle memories
     memories = shuffleArray(memories);
+    setupActionListeners();
     updateProgress();
     showMemory();
   } catch (error) {
@@ -40,7 +44,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Show current memory
   function showMemory() {
+    if (currentIndex >= memories.length) {
+      showCompletionScreen();
+      return;
+    }
+    
     const memory = memories[currentIndex];
+    currentMemoryId = memory.id;
+    
     questionEl.textContent = memory.front;
     answerEl.textContent = memory.back;
     contextEl.innerHTML = memory.context?.url ? 
@@ -51,6 +62,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     contextEl.style.display = 'none';
     ratingButtons.style.display = 'none';
     showAnswerBtn.style.display = 'block';
+    
+    // Show/Hide action buttons appropriately
+    editCurrentCardBtn.style.display = 'block';
+    deleteCurrentCardBtn.style.display = 'block';
   }
 
   // Update progress display
@@ -133,18 +148,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Move to next memory or finish
     currentIndex++;
-    updateProgress();
-    
+    showNextCardOrFinish();
+  }
+
+  // Added: Central function to show next card or finish
+  function showNextCardOrFinish() {
     if (currentIndex < memories.length) {
+      updateProgress();
       showMemory();
     } else {
-      // Create completion screen
-      questionEl.textContent = "Review complete!";
-      answerEl.style.display = 'none';
-      contextEl.style.display = 'none';
-      ratingButtons.style.display = 'none';
-      
-      // Create completion buttons container
+      updateProgress(); // Update progress to show full bar
+      showCompletionScreen();
+    }
+  }
+  
+  // Added: Setup listeners for Edit/Delete
+  function setupActionListeners() {
+    editCurrentCardBtn.addEventListener('click', handleEditCard);
+    deleteCurrentCardBtn.addEventListener('click', handleDeleteCard);
+  }
+  
+  // Added: Handle Edit Button Click
+  function handleEditCard() {
+    if (!currentMemoryId) return;
+    
+    console.log(`Opening edit page for card ID: ${currentMemoryId}`);
+    // Open edit page in new tab
+    chrome.tabs.create({ 
+      url: chrome.runtime.getURL(`edit.html?id=${currentMemoryId}`),
+      active: true
+    });
+    
+    // Immediately move to the next card in the review session
+    // The user can review the edited card later
+    currentIndex++; // Move index forward
+    showNextCardOrFinish();
+  }
+  
+  // Added: Handle Delete Button Click
+  async function handleDeleteCard() {
+    if (!currentMemoryId) return;
+    
+    const memoryToDelete = memories[currentIndex]; // Get ref before potentially modifying index
+    
+    if (confirm(`Are you sure you want to delete this card?\n\nFront: ${memoryToDelete.front}`)) {
+      try {
+        console.log(`Deleting card ID: ${currentMemoryId}`);
+        await MemoryStorage.deleteMemory(currentMemoryId);
+        
+        // Remove card from the current session array
+        memories.splice(currentIndex, 1);
+        
+        console.log(`Card removed. Remaining in session: ${memories.length}`);
+        
+        // Important: Don't increment currentIndex here, as splice shifted the array.
+        // Show the card now at the *same* currentIndex (which is the next card),
+        // or finish if the array is now empty or we were at the end.
+        currentMemoryId = null; // Clear ID before potentially finishing
+        showNextCardOrFinish(); 
+        
+      } catch (error) {
+        console.error("Error deleting memory:", error);
+        alert("Failed to delete the card.");
+      }
+    } else {
+      console.log("Deletion cancelled by user.");
+    }
+  }
+
+  // Added: Consolidated Completion Screen Logic
+  function showCompletionScreen() {
+    console.log("Review session complete.");
+    currentMemoryId = null; // Clear current ID
+    questionEl.textContent = "Review complete!";
+    answerEl.style.display = 'none';
+    contextEl.style.display = 'none';
+    ratingButtons.style.display = 'none';
+    editCurrentCardBtn.style.display = 'none'; // Hide action buttons
+    deleteCurrentCardBtn.style.display = 'none';
+    showAnswerBtn.style.display = 'none';
+    
+    // Avoid adding completion buttons multiple times
+    if (!document.getElementById('viewStatsBtn')) {
       const completionButtons = document.createElement('div');
       completionButtons.className = 'completion-buttons';
       completionButtons.innerHTML = `
@@ -152,10 +237,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <button id="closeBtn" class="secondary-btn">Close Window</button>
       `;
       
-      // Add buttons to the controls container
       document.querySelector('.controls').appendChild(completionButtons);
       
-      // Add event listeners for the buttons
       document.getElementById('viewStatsBtn').addEventListener('click', () => {
         chrome.tabs.create({
           url: chrome.runtime.getURL('stats.html'),

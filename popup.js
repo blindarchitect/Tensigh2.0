@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM elements
-  const reviewBtn = document.getElementById('reviewBtn');
+  const startReviewModeBtn = document.getElementById('startReviewModeBtn');
   const statsBtn = document.getElementById('statsBtn');
   const saveTabBtn = document.getElementById('saveTabBtn');
   const memoryList = document.getElementById('memoryList');
@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const streakCount = document.getElementById('streakCount');
   const searchInput = document.getElementById('searchInput');
   const tagFilter = document.getElementById('tagFilter');
-  const modeButtons = document.querySelectorAll('.mode-btn');
   // Added Elements
   const tabGroupListContainer = document.getElementById('tabGroupList');
   const newGroupNameInput = document.getElementById('newGroupNameInput');
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const viewSavedGroupsBtn = document.getElementById('viewSavedGroupsBtn');
 
   // State
-  let currentMode = 'spaced';
   let memories = [];
   let tags = [];
   let stats = {};
@@ -144,13 +142,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Event handlers
   function setupEventListeners() {
-    // Mode selection
-    modeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        modeButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentMode = btn.dataset.mode;
+    // Listener for the single Review button
+    startReviewModeBtn.addEventListener('click', () => {
+      const dueMemories = memories.filter(m => new Date(m.nextReview) <= new Date());
+      if (dueMemories.length === 0) {
+        alert('No memories due for review!');
+        return;
+      }
+      
+      // Always open review.html now
+      chrome.tabs.create({ 
+        url: chrome.runtime.getURL('review.html'),
+        active: true
       });
+      
+      // Keep active class logic if desired (visual feedback)
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      startReviewModeBtn.classList.add('active'); 
     });
 
     // Search
@@ -161,23 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Tag filter
     tagFilter.addEventListener('change', () => {
       renderMemoryList(searchInput.value);
-    });
-
-    // Review button
-    reviewBtn.addEventListener('click', () => {
-      const dueMemories = memories.filter(m => new Date(m.nextReview) <= new Date());
-      if (dueMemories.length === 0) {
-        alert('No memories due for review!');
-        return;
-      }
-      
-      let reviewUrl = 'review.html';
-      if (currentMode === 'quiz') reviewUrl = 'quiz.html';
-      
-      chrome.tabs.create({ 
-        url: chrome.runtime.getURL(reviewUrl),
-        active: true
-      });
     });
 
     // Stats button

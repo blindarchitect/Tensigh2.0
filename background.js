@@ -37,16 +37,35 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             const selection = window.getSelection();
             if (!selection.rangeCount) return null;
             const range = selection.getRangeAt(0);
+            
+            let paragraphElement = range.commonAncestorContainer;
+            // If the common ancestor is a text node, get its parent element
+            if (paragraphElement.nodeType === Node.TEXT_NODE) {
+              paragraphElement = paragraphElement.parentElement;
+            }
+            
+            // Basic check if we successfully found an element
+            if (!paragraphElement || typeof paragraphElement.textContent === 'undefined') {
+                // Fallback to the original selection's immediate parent if finding the paragraph failed
+                // This might happen in complex DOM structures or if selection is not within standard text blocks.
+                paragraphElement = range.startContainer.parentElement;
+            }
+            
+            // Ensure we have a valid element before accessing properties
+            const paragraphText = paragraphElement ? paragraphElement.textContent : '';
+            const paragraphHtml = paragraphElement ? paragraphElement.outerHTML.slice(0, 1000) : ''; // Increased slice limit
+
             return {
-              surroundingText: range.startContainer.textContent,
-              htmlContext: range.startContainer.parentElement.outerHTML.slice(0, 500)
+              paragraphText: paragraphText, // Use this for the back of the card
+              paragraphHtml: paragraphHtml // More context, potentially useful later
             };
           }
         });
         
         if (result?.result) {
-          context.surroundingText = result.result.surroundingText;
-          context.htmlContext = result.result.htmlContext;
+          // Updated context properties
+          context.paragraphText = result.result.paragraphText;
+          context.paragraphHtml = result.result.paragraphHtml;
         }
       } catch (error) {
         console.log("Couldn't get detailed context:", error);
@@ -55,8 +74,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       // Create memory using storage service
       const newMemory = await MemoryStorage.createMemory({
         front: info.selectionText.trim(),
-        back: context.surroundingText || info.selectionText.trim(),
-        context: context,
+        // Use the full paragraph text as the default back content
+        back: (context.paragraphText || info.selectionText).trim(), 
+        context: context, // Contains paragraphText and paragraphHtml now
         tags: []
       });
 

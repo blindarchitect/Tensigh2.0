@@ -12,7 +12,9 @@
       "contextMenus",
       "storage",
       "activeTab",
-      "scripting"
+      "scripting",
+      "tabs",
+      "tabGroups"
     ],
     "background": {
       "service_worker": "background.js"
@@ -26,7 +28,13 @@
       }
     },
     "web_accessible_resources": [{
-      "resources": ["review.html", "edit.html", "quiz.html", "stats.html"],
+      "resources": [
+        "review.html", 
+        "edit.html", 
+        "quiz.html", 
+        "stats.html",
+        "saved_groups.html"
+      ],
       "matches": ["<all_urls>"]
     }]
   }

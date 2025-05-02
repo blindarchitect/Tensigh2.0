@@ -40,11 +40,31 @@
     
     <div class="memory-list" id="memoryList"></div>
 
+    <!-- Added Sections for Tab Groups -->
+    <div class="tab-groups-section">
+        <h3>Save Existing Group</h3>
+        <div id="tabGroupList" class="tab-group-list">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <div class="save-selected-section">
+        <h3>Create Group from Selected Tabs</h3>
+        <div class="save-selected-controls">
+            <input type="text" id="newGroupNameInput" placeholder="New Group Name (Optional)" class="group-name-input">
+            <button id="groupSelectedTabsBtn" class="secondary-btn save-selected-btn">Create Group</button>
+        </div>
+    </div>
+    <!-- End Added Sections -->
+
     <div class="pro-actions">
       <button id="reviewBtn" class="primary-btn">Start Session</button>
       <button id="statsBtn" class="secondary-btn">View Stats</button>
+      <button id="viewSavedGroupsBtn" class="secondary-btn">View Saved Groups</button>
+      <button id="saveTabBtn" class="secondary-btn">Save Current Tab</button>
     </div>
   </div>
+  <script src="storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

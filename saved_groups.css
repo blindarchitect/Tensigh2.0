@@ -1,0 +1,87 @@
+/* Basic styles for saved_groups.html */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 15px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.saved-group-list {
+    margin-top: 20px;
+}
+
+.saved-group-item {
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.saved-group-info {
+    display: flex;
+    align-items: center;
+}
+
+.saved-group-color {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+}
+
+.saved-group-title {
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.saved-group-count {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.saved-group-actions button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.load-btn {
+    background-color: #5cb85c;
+    color: white;
+    border-color: #4cae4c;
+}
+
+.delete-btn {
+    background-color: #d9534f;
+    color: white;
+    border-color: #d43f3a;
+}
+
+.no-groups-msg {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+} 

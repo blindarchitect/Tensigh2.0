@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // DOM elements
   const reviewBtn = document.getElementById('reviewBtn');
   const statsBtn = document.getElementById('statsBtn');
+  const saveTabBtn = document.getElementById('saveTabBtn');
   const memoryList = document.getElementById('memoryList');
   const totalCount = document.getElementById('totalCount');
   const dueCount = document.getElementById('dueCount');
@@ -9,6 +10,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const searchInput = document.getElementById('searchInput');
   const tagFilter = document.getElementById('tagFilter');
   const modeButtons = document.querySelectorAll('.mode-btn');
+  // Added Elements
+  const tabGroupListContainer = document.getElementById('tabGroupList');
+  const newGroupNameInput = document.getElementById('newGroupNameInput');
+  const groupSelectedTabsBtn = document.getElementById('groupSelectedTabsBtn');
+  const viewSavedGroupsBtn = document.getElementById('viewSavedGroupsBtn');
 
   // State
   let currentMode = 'spaced';
@@ -19,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize
   await loadData();
   renderMemoryList();
+  renderTabGroupList();
   setupEventListeners();
 
   // Data loading
@@ -99,6 +106,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Added: Rendering Tab Group List
+  async function renderTabGroupList() {
+    if (!chrome.tabGroups) {
+      console.warn("Tab Groups API not available.");
+      tabGroupListContainer.innerHTML = '<p>Tab group features require Chrome 90+.</p>';
+      return;
+    }
+    try {
+      const groups = await chrome.tabGroups.query({});
+      tabGroupListContainer.innerHTML = ''; // Clear previous list
+
+      if (groups.length === 0) {
+        tabGroupListContainer.innerHTML = '<p class="no-groups-msg">No active tab groups found.</p>';
+        return;
+      }
+
+      groups.forEach(group => {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'tab-group-item';
+        groupEl.innerHTML = `
+          <span class="tab-group-color" style="background-color: ${group.color}"></span>
+          <span class="tab-group-title">${group.title || 'Untitled Group'}</span>
+          <button class="save-group-btn secondary-btn" data-group-id="${group.id}">Save</button>
+        `;
+        
+        const saveBtn = groupEl.querySelector('.save-group-btn');
+        saveBtn.addEventListener('click', handleSaveExistingGroup);
+        
+        tabGroupListContainer.appendChild(groupEl);
+      });
+    } catch (error) {
+      console.error("Error rendering tab group list:", error);
+      tabGroupListContainer.innerHTML = '<p class="error-msg">Error loading tab groups.</p>';
+    }
+  }
+
   // Event handlers
   function setupEventListeners() {
     // Mode selection
@@ -144,6 +187,145 @@ document.addEventListener('DOMContentLoaded', async () => {
         active: true
       });
     });
+
+    // Save Tab button
+    saveTabBtn.addEventListener('click', async () => {
+        try {
+            const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (currentTab) {
+                await MemoryStorage.saveTab({
+                    title: currentTab.title,
+                    url: currentTab.url,
+                    favIconUrl: currentTab.favIconUrl
+                });
+                
+                // Visual feedback
+                saveTabBtn.textContent = 'Tab Saved!';
+                saveTabBtn.disabled = true;
+                setTimeout(() => {
+                    saveTabBtn.textContent = 'Save Current Tab';
+                    saveTabBtn.disabled = false;
+                }, 1500);
+            } else {
+                console.error("Could not get current tab information.");
+                // Maybe provide feedback to user?
+            }
+        } catch (error) {
+            console.error("Error saving tab:", error);
+            // Maybe provide feedback to user?
+        }
+    });
+
+    // Modified Listener for Group Selected Tabs Button
+    groupSelectedTabsBtn.addEventListener('click', async () => {
+        try {
+            const highlightedTabs = await chrome.tabs.query({ highlighted: true, currentWindow: true });
+            
+            if (highlightedTabs.length === 0) {
+                alert('Please select (highlight) one or more tabs first.');
+                return;
+            }
+
+            const tabIds = highlightedTabs.map(tab => tab.id);
+            
+            // Create the native Chrome tab group
+            const newGroupId = await chrome.tabs.group({ tabIds: tabIds });
+            console.log(`Created new group with ID: ${newGroupId}`);
+
+            // Optionally update the group's title
+            let groupTitle = newGroupNameInput.value.trim();
+            if (groupTitle) {
+                await chrome.tabGroups.update(newGroupId, { title: groupTitle });
+                console.log(`Updated group ${newGroupId} title to: ${groupTitle}`);
+            }
+
+            // --- Removed direct save to MemoryStorage ---            
+            
+            // Refresh the list of groups in the popup
+            await renderTabGroupList(); 
+            
+            // Feedback
+            groupSelectedTabsBtn.textContent = 'Group Created!';
+            newGroupNameInput.value = ''; // Clear input
+            setTimeout(() => {
+                groupSelectedTabsBtn.textContent = 'Create Group';
+            }, 1500);
+            
+        } catch (error) {
+            console.error("Error creating group from selected tabs:", error);
+            alert("An error occurred while creating the group."); // User feedback
+        }    
+    });
+    
+    // Ensure event listener for the dynamically created save buttons still exists
+    // (handleSaveExistingGroup is attached within renderTabGroupList)
+
+    // Added Listener for View Saved Groups Button
+    viewSavedGroupsBtn.addEventListener('click', () => {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL('saved_groups.html')
+        });
+    });
+
+  }
+  
+  // Handler for Saving Existing Group
+  async function handleSaveExistingGroup(event) {
+    const saveBtn = event.target;
+    const groupId = parseInt(saveBtn.dataset.groupId, 10);
+    
+    if (isNaN(groupId)) {
+        console.error("Invalid groupId:", saveBtn.dataset.groupId);
+        return;
+    }
+    
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+    
+    let tabsInGroup = []; // Keep track of tab IDs
+    
+    try {
+        const groupInfo = await chrome.tabGroups.get(groupId);
+        tabsInGroup = await chrome.tabs.query({ groupId: groupId });
+        
+        const tabsToSave = tabsInGroup.map(tab => ({
+            title: tab.title,
+            url: tab.url,
+            favIconUrl: tab.favIconUrl
+        }));
+            
+        await MemoryStorage.saveTabGroup({
+            originalGroupId: groupInfo.id.toString(),
+            title: groupInfo.title || 'Untitled Group',
+            color: groupInfo.color,
+            tabs: tabsToSave
+        });
+        
+        saveBtn.textContent = 'Saved!';
+        
+        // --- Auto-close the native group --- 
+        try {
+          const tabIdsToUngroup = tabsInGroup.map(tab => tab.id);
+          if (tabIdsToUngroup.length > 0) {
+              await chrome.tabs.ungroup(tabIdsToUngroup);
+              console.log(`Ungrouped native group ${groupId}`);
+              // Refresh the list in the popup to remove the group
+              await renderTabGroupList(); 
+          }
+        } catch (ungroupError) {
+            console.error(`Error ungrouping group ${groupId}:`, ungroupError);
+            // Don't block the rest of the flow if ungrouping fails
+        }
+        // --- End Auto-close ---
+        
+        // Keep button disabled after successful save & close
+        
+    } catch (error) {
+        console.error(`Error saving group ${groupId}:`, error);
+        alert(`An error occurred while saving group: ${groupId}`);
+        saveBtn.textContent = 'Save'; // Reset on error
+        saveBtn.disabled = false;
+    }
   }
 
   // Memory actions

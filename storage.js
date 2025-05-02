@@ -1,27 +1,42 @@
 // Storage service for Tensigh Pro
 class MemoryStorage {
   static async initialize() {
-    const data = await chrome.storage.local.get(['memories', 'tags', 'stats', 'settings']);
+    const data = await chrome.storage.local.get(['memories', 'tags', 'stats', 'settings', 'savedTabs', 'savedTabGroups']);
     
     // Initialize if not exists
+    const initialState = {};
     if (!data.memories) {
-      await chrome.storage.local.set({
-        memories: [],
-        tags: [],
-        stats: {
-          created: 0,
-          reviewed: 0,
-          streak: 0,
-          lastReviewDate: null
-        },
-        settings: {
-          defaultMode: "spacedRepetition",
-          darkMode: false,
-          reviewLimit: 20,
-          backupEnabled: true,
-          autoBackupInterval: 24 // hours
-        }
-      });
+      initialState.memories = [];
+    }
+    if (!data.tags) {
+      initialState.tags = [];
+    }
+    if (!data.stats) {
+      initialState.stats = {
+        created: 0,
+        reviewed: 0,
+        streak: 0,
+        lastReviewDate: null
+      };
+    }
+    if (!data.settings) {
+      initialState.settings = {
+        defaultMode: "spacedRepetition",
+        darkMode: false,
+        reviewLimit: 20,
+        backupEnabled: true,
+        autoBackupInterval: 24 // hours
+      };
+    }
+    if (!data.savedTabs) {
+      initialState.savedTabs = [];
+    }
+    if (!data.savedTabGroups) {
+        initialState.savedTabGroups = [];
+    }
+    
+    if (Object.keys(initialState).length > 0) {
+        await chrome.storage.local.set(initialState);
     }
   }
 
@@ -135,6 +150,56 @@ class MemoryStorage {
       console.error('Error importing data:', error);
       return false;
     }
+  }
+
+  static async saveTab(tabData) {
+    const { savedTabs } = await chrome.storage.local.get(['savedTabs']);
+    
+    const newSavedTab = {
+      ...tabData, // Should contain title, url, favIconUrl
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString()
+    };
+    
+    await chrome.storage.local.set({
+      savedTabs: [...savedTabs, newSavedTab]
+    });
+    
+    return newSavedTab;
+  }
+
+  static async saveTabGroup(groupData) {
+    const { savedTabGroups } = await chrome.storage.local.get(['savedTabGroups']);
+    
+    const newSavedGroup = {
+      ...groupData, // Should contain originalGroupId, title, color, tabs array
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString()
+    };
+    
+    await chrome.storage.local.set({
+      savedTabGroups: [...savedTabGroups, newSavedGroup]
+    });
+    
+    console.log("Saved group:", newSavedGroup); // For debugging
+    return newSavedGroup;
+  }
+
+  // Added: Get all saved tab groups
+  static async getSavedTabGroups() {
+    const { savedTabGroups } = await chrome.storage.local.get(['savedTabGroups']);
+    return savedTabGroups || [];
+  }
+
+  // Added: Delete a specific saved tab group by its unique ID
+  static async deleteSavedTabGroup(groupIdToDelete) {
+    const { savedTabGroups } = await chrome.storage.local.get(['savedTabGroups']);
+    const updatedGroups = (savedTabGroups || []).filter(group => group.id !== groupIdToDelete);
+    
+    await chrome.storage.local.set({
+      savedTabGroups: updatedGroups
+    });
+    console.log(`Deleted saved group: ${groupIdToDelete}`);
   }
 }
 

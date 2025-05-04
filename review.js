@@ -1,3 +1,19 @@
+// Added: Helper function to escape HTML characters
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"/]/g, function (s) {
+      const entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;'
+      };
+      return entityMap[s];
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Wait for DOM to be fully loaded
   const questionEl = document.getElementById('question');
@@ -52,8 +68,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const memory = memories[currentIndex];
     currentMemoryId = memory.id;
     
-    questionEl.textContent = memory.front;
-    answerEl.textContent = memory.back;
+    console.log(`Displaying memory (Index: ${currentIndex}, ID: ${currentMemoryId}):`, JSON.stringify(memory, null, 2));
+    
+    // --- Display Front Content (Question + Image) ---
+    // Use escapeHTML on the memory.front text
+    let frontHtml = `<div class="memory-text-content">${escapeHTML(memory.front)}</div>`; 
+    if (memory.context?.imageUrl) {
+        frontHtml += `<img src="${memory.context.imageUrl}" class="memory-image" alt="Memory image">`;
+    }
+    questionEl.innerHTML = frontHtml; 
+    // --- End Display Front Content ---
+    
+    // Display Back Content (Escape it too, just in case it's ever rendered with innerHTML)
+    answerEl.textContent = memory.back; // Using textContent is safer for back if no HTML is needed
+    // If back *might* need HTML rendering later, use: answerEl.innerHTML = escapeHTML(memory.back);
+    
     contextEl.innerHTML = memory.context?.url ? 
       `Source: <a href="${memory.context.url}" target="_blank">${new URL(memory.context.url).hostname}</a>` : '';
     

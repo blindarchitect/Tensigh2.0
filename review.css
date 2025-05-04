@@ -220,3 +220,17 @@ body {
     background: #475569;
   }
 }
+
+/* Added styles for memory text and image */
+.memory-text-content {
+  margin-bottom: 10px; /* Add space below text if image exists */
+}
+
+.memory-image {
+  display: block; /* Make it a block element */
+  max-width: 90%; /* Limit width to prevent overflow */
+  max-height: 250px; /* Limit height */
+  margin: 10px auto 0 auto; /* Center image horizontally, add top margin */
+  border-radius: 4px;
+  object-fit: contain; /* Scale image while preserving aspect ratio */
+}

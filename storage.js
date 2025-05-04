@@ -68,6 +68,8 @@ class MemoryStorage {
         created: (stats.created || 0) + 1
     };
     
+    console.log("Attempting to save new memory:", JSON.stringify(newMemory, null, 2));
+    
     await chrome.storage.local.set({
       memories: updatedMemories,
       tags: updatedTags,
@@ -283,6 +285,27 @@ class MemoryStorage {
     // Re-initialize to ensure any default structures are respected if keys were missing,
     // although exportAllData tries to prevent missing keys.
     await MemoryStorage.initialize(); 
+  }
+
+  // Added: Export ONLY memories in a simplified format for external use
+  static async exportMemoriesForExternal() {
+      const { memories } = await chrome.storage.local.get(['memories']);
+      if (!memories || memories.length === 0) {
+          return []; // Return empty array if no memories
+      }
+      
+      const externalFormatMemories = memories.map(m => ({
+          front: m.front || '', // Default to empty string if missing
+          back: m.back || '',
+          tags: m.tags || [],
+          sourceUrl: m.context?.url || null,
+          sourceTitle: m.context?.title || null,
+          createdAt: m.createdAt || null
+          // Excluded: id, nextReview, easeFactor, interval, reviewCount, 
+          // lastReviewed, status, full context object details
+      }));
+      
+      return externalFormatMemories;
   }
 }
 

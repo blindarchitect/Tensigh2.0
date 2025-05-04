@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const savedGroupListContainer = document.getElementById('savedGroupList');
     const exportDataBtn = document.getElementById('exportDataBtn');
+    const exportMemoriesBtn = document.getElementById('exportMemoriesBtn');
     const importDataBtn = document.getElementById('importDataBtn');
     const importFileInput = document.getElementById('importFileInput');
     let allSavedGroups = []; // Cache fetched groups
@@ -125,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Added: Setup listeners for Import/Export buttons
     function setupImportExportListeners() {
         exportDataBtn.addEventListener('click', handleExportData);
+        exportMemoriesBtn.addEventListener('click', handleExportMemoriesExternal);
         importDataBtn.addEventListener('click', () => {
             // Trigger the hidden file input
             importFileInput.click();
@@ -154,6 +156,36 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error exporting data:", error);
             alert("An error occurred while exporting data. Check the console for details.");
+        }
+    }
+
+    // Added: Handle Export Memories (External) Button Click
+    async function handleExportMemoriesExternal() {
+        try {
+            console.log("Exporting memories for external use...");
+            const memoriesToExport = await MemoryStorage.exportMemoriesForExternal();
+            
+            if (memoriesToExport.length === 0) {
+                alert("No memories found to export.");
+                return;
+            }
+            
+            const jsonString = JSON.stringify(memoriesToExport, null, 2); // Pretty print
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob); // Use Object URL in page context
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tensigh-memories-export.json`; // Fixed filename for this export type
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up object URL
+            console.log("External memories export initiated.");
+
+        } catch (error) {
+            console.error("Error exporting memories for external use:", error);
+            alert("An error occurred while exporting memories. Check the console.");
         }
     }
 
